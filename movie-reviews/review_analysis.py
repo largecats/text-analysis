@@ -85,10 +85,12 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 
 def grey_color_func(word, font_size, position, orientation, random_state = None, **kwargs):
     return "hsl(0, 0%%, %d%%)" % random.randint(60, 100)
+
 # mask
 mask = np.array(Image.open("BBB_poster.jpg"))
 # generate word cloud image
 wordcloud = WordCloud(mask = mask).generate(text)
+
 # diplay image
 plt.figure(figsize=(18,12))
 plt.imshow(wordcloud.recolor(color_func = grey_color_func, random_state = 3), interpolation = 'bilinear')
