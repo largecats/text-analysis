@@ -68,6 +68,7 @@ for i in range(len(words)):
         lemWord = word
     else:
         lemWord = lem.lemmatize(word)
+    # turn into lowercase
     lemWords.append(lemWord.lower())
 
 # remove uninformative words
