@@ -1,46 +1,61 @@
-# https://www.datacamp.com/community/tutorials/text-analytics-beginners-nltk
-# https://amueller.github.io/word_cloud/auto_examples/a_new_hope.html#
-
+##################################################
+#                 import modules                 #
+##################################################
+import os
 import nltk
 import csv
 import pandas as pd
 import re
-# nltk.download()
+import random
+import matplotlib.pyplot as plt
+import numpy as np
 
-fileName = "C:\\Users\\LinFan Xiao\\Fun\\Programming\\For fun\\web scraping\\TF movie review\\reviews.csv"
+##################################################
+#                    read csv                    #
+##################################################
+# set working directory
+path = ""
+os.chdir(path)
+
+fileName = "reviews.csv"
 df = pd.read_csv(fileName)
 print(df.head(5))
 
-# Tokenization
+##################################################
+#                   word cloud                   #
+##################################################
+# tokenize into words
 from nltk.tokenize import word_tokenize
-tokenizedReviews = []
+tokenizedWords = []
 for i in range(len(df.index)):
-    review = df['review'][i]
-    tokenizedReview = word_tokenize(review)
-    tokenizedReviews.append(tokenizedReview)
+    review = df['title'][i]
+    # or use full review
+    # review = df['review'][i]
+    tokenizedWord = word_tokenize(review)
+    tokenizedWords.append(tokenizedWord)
 
-# Removing stop words and punctuations
-punctuations = ['.', ',', ';', ':', '!', '?']
+# remove stop words and punctuations
 from nltk.corpus import stopwords
+punctuations = ['.', ',', ';', ':', '!', '?']
 stopWords = set(stopwords.words("english"))
-filteredTokenizedReviews = []
-for tokenizedReview in tokenizedReviews:
-    filteredTokenizedReview = []
-    for word in tokenizedReview:
+filteredtokenizedWords = []
+for tokenizedWord in tokenizedWords:
+    filteredtokenizedWord = []
+    for word in tokenizedWord:
         if (word not in stopWords) and (word not in punctuations):
-            filteredTokenizedReview.append(word)
-    filteredTokenizedReviews.append(filteredTokenizedReview)
+            filteredtokenizedWord.append(word)
+    filteredtokenizedWords.append(filteredtokenizedWord)
 
-# Merge list of lists into one list
+# merge list of lists into one list
 words = []
-for filteredTokenizedReview in filteredTokenizedReviews:
-    for word in filteredTokenizedReview:
+for filteredtokenizedWord in filteredtokenizedWords:
+    for word in filteredtokenizedWord:
         words.append(word)
 
-# POS Tagging
+# pos Tagging
 tags = nltk.pos_tag(words)
 
-# Lemmatization
+# lemmatization
 from nltk.stem.wordnet import WordNetLemmatizer
 lem = WordNetLemmatizer()
 lemWords = []
@@ -53,39 +68,76 @@ for i in range(len(words)):
         lemWord = word
     else:
         lemWord = lem.lemmatize(word)
-    lemWords.append(lemWord)
+    lemWords.append(lemWord.lower())
 
-# Remove uninformative words
+# remove uninformative words
 filteredWords = []
 for lemWord in lemWords:
-    if lemWord not in ["movie", "film", "Transformer", "Transformers", "transformer", "transformers", "n't"]:
+    if lemWord not in ["movie", "film", "review", "spoiler", "transformer", "transformers", "n't", "age", "extinction", "dark", "moon", "last", "knight", "revenge", "fallen", "one", "episode", "series", "show", "season"]:
         filteredWords.append(lemWord)
 
-# Merge list of words into one string
+# merge list of words into one string
 text = ' '.join(filteredWords)
 
-# Create word cloud
-import random
-import matplotlib.pyplot as plt
-import numpy as np
+# create word cloud
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-def grey_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+
+def grey_color_func(word, font_size, position, orientation, random_state = None, **kwargs):
     return "hsl(0, 0%%, %d%%)" % random.randint(60, 100)
-# Mask
-mask = np.array(Image.open("C:\\Users\\LinFan Xiao\\Fun\\Programming\\For fun\\web scraping\\TF movie review\\BBB_poster.jpg"))
-# Create and generate a word cloud image
+# mask
+mask = np.array(Image.open("BBB_poster.jpg"))
+# generate word cloud image
 wordcloud = WordCloud(mask = mask).generate(text)
-# Display the generated image
+# diplay image
 plt.figure(figsize=(18,12))
-plt.imshow(wordcloud.recolor(color_func = grey_color_func, random_state=3), interpolation='bilinear')
-# plt.imshow(wordcloud.recolor(color_func = ImageColorGenerator(mask)), interpolation='bilinear')
-# plt.imshow(wordcloud, interpolation='bilinear')
+plt.imshow(wordcloud.recolor(color_func = grey_color_func, random_state = 3), interpolation = 'bilinear')
 plt.axis("off")
-plt.savefig("C:\\Users\\LinFan Xiao\\Fun\\Programming\\For fun\\web scraping\\TF movie review\\review_wordcloud.png", format="png")
+plt.savefig("review_wordcloud.png", format = "png")
 plt.show()
 
-# from nltk.probability import FreqDist
-# fdist = FreqDist(filteredWords)
-# fdist.plot(30,cumulative=False)
-# plt.show()
+##################################################
+#               sentiment analysis               #
+##################################################
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.tokenize import sent_tokenize
+nltk.download('vader_lexicon')
+
+# tokenize into sentences
+tokenizedSents = []
+for i in range(len(df.index)):
+    review = df['title'][i]
+    # or use full review
+    # review = df['review'][i]
+    tokenizedSent = sent_tokenize(review)
+    tokenizedSents.append(tokenizedSent)
+
+# merge list of lists into one list
+sents = []
+for tokenizedSent in tokenizedSents:
+    for sent in tokenizedSent:
+        sents.append(sent)
+
+# polarity scores
+neg = []
+neu = []
+pos = []
+compound = []
+sia = SentimentIntensityAnalyzer()
+for sent in sents:
+    print(sent)
+    ps = sia.polarity_scores(sent)
+    print(ps)
+    neg.append(ps["neg"])
+    neu.append(ps["neu"])
+    pos.append(ps["pos"])
+    compound.append(ps["compound"])
+scores = pd.DataFrame({'negative': neg, 'neutral': neu, 'positive': pos, 'compound': compound}, columns = ['negative', 'neutral', 'positive', 'compound'])
+print(scores.info())
+print(scores.head(10))
+
+# visualization
+plt.hist(scores['compound'])
+plt.title("Movie review polarity scores")
+plt.savefig("review_polarity_scores.png")
+plt.show()
