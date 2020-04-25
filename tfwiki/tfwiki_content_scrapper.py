@@ -15,6 +15,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import csv
+import sys
 import tfwiki_url_scrapper
 
 CSV_PATH = 'C:\\Users\\xiaolinfan\\Fun\\programming\\personal-projects\\text-analysis\\tfwiki\\content.csv'
@@ -51,5 +52,9 @@ def get_all_content(df, csvPath, startFrom):
 
 if __name__ == '__main__':
     df = read_from_csv(tfwiki_url_scrapper.CSV_PATH)
-    results = get_all_content(df, CSV_PATH, 0)
+    startFrom = 0
+    if len(sys.argv) == 2:
+        startFrom = int(sys.argv[1])
+    print('Starting from {}'.format(startFrom))
+    results = get_all_content(df, CSV_PATH, startFrom)
     # tfwiki_url_scrapper.write_dict_to_csv(results, CSV_PATH)
