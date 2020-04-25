@@ -1,2 +1,2 @@
-# text-analysis-with-movie-reviews
-Analyze movie reviews.
+# text-analysis
+Fun little projects.
