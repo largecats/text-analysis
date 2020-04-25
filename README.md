@@ -1,2 +1,2 @@
 # text-analysis
-Fun little projects.
+Little projects for fun.
